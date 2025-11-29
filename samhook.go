@@ -23,41 +23,56 @@ func (m *Message) AddAttachments(attachments []Attachment) *Message {
 func Send(url string, msg Message) error {
 	payloadBytes, err := json.Marshal(msg)
 	if err != nil {
-		return err
+		return NewSerializationError(err)
 	}
 	body := bytes.NewReader(payloadBytes)
 
 	req, err := http.NewRequest(http.MethodPost, url, body)
 	if err != nil {
-		return err
+		return NewNetworkError(url, err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return NewNetworkError(url, err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+
+	// 檢查 HTTP 狀態碼
+	if resp.StatusCode != http.StatusOK {
+		// 讀取錯誤回應體
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		responseBody := string(bodyBytes)
+		return NewAPIError(url, resp.StatusCode, responseBody)
+	}
 
 	return nil
 }
 
 // SendReader 發送message
 func SendReader(url string, r io.Reader) error {
-
 	req, err := http.NewRequest(http.MethodPost, url, r)
 	if err != nil {
-		return err
+		return NewNetworkError(url, err)
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return NewNetworkError(url, err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+
+	// 檢查 HTTP 狀態碼
+	if resp.StatusCode != http.StatusOK {
+		// 讀取錯誤回應體
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		responseBody := string(bodyBytes)
+		return NewAPIError(url, resp.StatusCode, responseBody)
+	}
 
 	return nil
 }

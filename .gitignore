@@ -1,0 +1,43 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+
+# Output of build tools
+backend/build/
+
+
+# Go workspace file
+go.work
+
+# Test coverage
+coverage.out
+*.out
+
+# IDE/editor
+.vscode/
+
+# Env
+.env 
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# misc
+.DS_Store
+
+# BMAD BMM ephemeral files
+.bmad/bmm/ephemeral/
+.bmad/
+.cursor/
+docs/sprint-artifacts/
+domain-brief.md
+architecture-decisions.md
+epics.md
+index.md
