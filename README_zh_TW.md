@@ -133,4 +133,4 @@ samhook/
 
 ## 授權
 
-未指定
+本專案採用 MIT 授權 - 詳見 [LICENSE](LICENSE) 文件。
