@@ -1,26 +1,28 @@
-# API 文檔
+# API Documentation
 
-## 概述
+English | [繁體中文](api_zh_TW.md)
 
-本文檔提供 samhook 函式庫的完整 API 參考。
+## Overview
 
-## 常數
+This document provides a complete API reference for the samhook library.
 
-### 顏色常數
+## Constants
 
-預定義的顏色常數，用於設定附件的顏色：
+### Color Constants
+
+Predefined color constants for setting attachment colors:
 
 ```go
-const Warning string = "#FFBB00"  // 警告顏色（黃色）
-const Danger string = "#FF0000"   // 危險顏色（紅色）
-const Good string = "#00FF00"      // 正常資訊顏色（綠色）
+const Warning string = "#FFBB00"  // Warning color (yellow)
+const Danger string = "#FF0000"   // Danger color (red)
+const Good string = "#00FF00"      // Normal information color (green)
 ```
 
-## 資料結構
+## Data Structures
 
 ### Message
 
-訊息主體結構，代表要發送的 webhook 訊息。
+Message structure representing the webhook message to be sent.
 
 ```go
 type Message struct {
@@ -34,19 +36,19 @@ type Message struct {
 }
 ```
 
-#### 欄位說明
+#### Field Descriptions
 
-- `Parse` - 解析模式（可選）
-- `Username` - 發送者使用者名稱（可選）
-- `IconURL` - 圖示 URL（可選）
-- `IconEmoji` - 圖示 Emoji（可選）
-- `Channel` - 目標頻道（可選）
-- `Text` - 訊息文字內容（可選）
-- `Attachments` - 附件列表（可選）
+- `Parse` - Parse mode (optional)
+- `Username` - Sender username (optional)
+- `IconURL` - Icon URL (optional)
+- `IconEmoji` - Icon emoji (optional)
+- `Channel` - Target channel (optional)
+- `Text` - Message text content (optional)
+- `Attachments` - List of attachments (optional)
 
 ### Attachment
 
-附件結構，用於豐富訊息內容。
+Attachment structure for enriching message content.
 
 ```go
 type Attachment struct {
@@ -67,26 +69,26 @@ type Attachment struct {
 }
 ```
 
-#### 欄位說明
+#### Field Descriptions
 
-- `Fallback` - 回退文字（用於不支援附件的客戶端）
-- `Color` - 附件左側顏色條（可使用預定義常數）
-- `Pretext` - 附件前的文字
-- `AuthorName` - 作者名稱
-- `AuthorLink` - 作者連結
-- `AuthorIcon` - 作者圖示 URL
-- `Title` - 附件標題
-- `TitleLink` - 標題連結
-- `Text` - 附件文字內容
-- `ImageURL` - 圖片 URL
-- `Fields` - 欄位列表
-- `Footer` - 頁腳文字
-- `FooterIcon` - 頁腳圖示 URL
-- `ThumbURL` - 縮圖 URL
+- `Fallback` - Fallback text (for clients that don't support attachments)
+- `Color` - Left-side color bar (can use predefined constants)
+- `Pretext` - Text before attachment
+- `AuthorName` - Author name
+- `AuthorLink` - Author link
+- `AuthorIcon` - Author icon URL
+- `Title` - Attachment title
+- `TitleLink` - Title link
+- `Text` - Attachment text content
+- `ImageURL` - Image URL
+- `Fields` - List of fields
+- `Footer` - Footer text
+- `FooterIcon` - Footer icon URL
+- `ThumbURL` - Thumbnail URL
 
 ### Field
 
-欄位結構，用於在附件中顯示鍵值對資訊。
+Field structure for displaying key-value information in attachments.
 
 ```go
 type Field struct {
@@ -96,78 +98,78 @@ type Field struct {
 }
 ```
 
-#### 欄位說明
+#### Field Descriptions
 
-- `Title` - 欄位標題
-- `Value` - 欄位值
-- `Short` - 是否為短欄位（用於並排顯示）
+- `Title` - Field title
+- `Value` - Field value
+- `Short` - Whether it's a short field (for side-by-side display)
 
-## 函數
+## Functions
 
 ### Send
 
-發送訊息到指定的 webhook URL。
+Sends a message to the specified webhook URL.
 
 ```go
 func Send(url string, msg Message) error
 ```
 
-#### 參數
+#### Parameters
 
-- `url` - webhook URL（字串）
-- `msg` - 要發送的訊息結構
+- `url` - Webhook URL (string)
+- `msg` - Message structure to send
 
-#### 返回值
+#### Return Value
 
-- `error` - 如果發送失敗則返回錯誤，否則返回 nil
+- `error` - Returns an error if sending fails, otherwise returns nil
 
-#### 行為
+#### Behavior
 
-1. 將訊息結構序列化為 JSON
-2. 建立 HTTP POST 請求
-3. 設定 Content-Type 為 application/json
-4. 發送請求並關閉回應主體
+1. Serializes the message structure to JSON
+2. Creates an HTTP POST request
+3. Sets Content-Type to application/json
+4. Sends the request and closes the response body
 
 ### SendReader
 
-從 io.Reader 發送訊息到指定的 webhook URL。
+Sends a message from io.Reader to the specified webhook URL.
 
 ```go
 func SendReader(url string, r io.Reader) error
 ```
 
-#### 參數
+#### Parameters
 
-- `url` - webhook URL（字串）
-- `r` - 包含 JSON 訊息的 Reader
+- `url` - Webhook URL (string)
+- `r` - Reader containing JSON message
 
-#### 返回值
+#### Return Value
 
-- `error` - 如果發送失敗則返回錯誤，否則返回 nil
+- `error` - Returns an error if sending fails, otherwise returns nil
 
-#### 使用場景
+#### Use Cases
 
-當您已經有 JSON 格式的訊息資料（例如從檔案讀取或從其他來源獲取）時，可以使用此函數直接發送。
+Use this function when you already have JSON-formatted message data (e.g., read from a file or obtained from another source).
 
-## 方法
+## Methods
 
 ### AddAttachment
 
-為訊息添加單個附件。返回訊息指標以支援鏈式調用。
+Adds a single attachment to the message. Returns a message pointer to support method chaining.
 
 ```go
 func (m *Message) AddAttachment(attachment Attachment) *Message
 ```
 
-#### 參數
+#### Parameters
 
-- `attachment` - 要添加的附件
+- `attachment` - Attachment to add
 
-#### 返回值
+#### Return Value
 
-- `*Message` - 訊息指標（用於鏈式調用）
+- `*Message` - Message pointer (for method chaining)
 
-#### 範例
+#### Example
 
 ```go
 msg := samhook.Message{Text: "Alert!"}
@@ -180,21 +182,21 @@ msg.AddAttachment(samhook.Attachment{
 
 ### AddAttachments
 
-為訊息添加多個附件。返回訊息指標以支援鏈式調用。
+Adds multiple attachments to the message. Returns a message pointer to support method chaining.
 
 ```go
 func (m *Message) AddAttachments(attachments []Attachment) *Message
 ```
 
-#### 參數
+#### Parameters
 
-- `attachments` - 要添加的附件列表
+- `attachments` - List of attachments to add
 
-#### 返回值
+#### Return Value
 
-- `*Message` - 訊息指標（用於鏈式調用）
+- `*Message` - Message pointer (for method chaining)
 
-#### 範例
+#### Example
 
 ```go
 msg := samhook.Message{Text: "Multiple alerts"}
@@ -207,23 +209,23 @@ msg.AddAttachments(attachments)
 
 ### SendWithOptions
 
-使用選項模式發送訊息，支援自訂 HTTP 客戶端配置。
+Sends a message using the options pattern, supporting custom HTTP client configuration.
 
 ```go
 func SendWithOptions(url string, msg Message, opts ...ClientOption) error
 ```
 
-#### 參數
+#### Parameters
 
-- `url` - webhook URL（字串）
-- `msg` - 要發送的訊息結構
-- `opts` - 客戶端選項（可變參數）
+- `url` - Webhook URL (string)
+- `msg` - Message structure to send
+- `opts` - Client options (variadic parameters)
 
-#### 返回值
+#### Return Value
 
-- `error` - 如果發送失敗則返回錯誤，否則返回 nil
+- `error` - Returns an error if sending fails, otherwise returns nil
 
-#### 範例
+#### Example
 
 ```go
 err := samhook.SendWithOptions(webhookURL, msg,
@@ -233,24 +235,24 @@ err := samhook.SendWithOptions(webhookURL, msg,
 
 ### SendWithContext
 
-使用 Context 發送訊息，支援超時和取消。
+Sends a message using Context, supporting timeout and cancellation.
 
 ```go
 func SendWithContext(ctx context.Context, url string, msg Message, opts ...ClientOption) error
 ```
 
-#### 參數
+#### Parameters
 
-- `ctx` - Context 用於超時和取消控制
-- `url` - webhook URL（字串）
-- `msg` - 要發送的訊息結構
-- `opts` - 客戶端選項（可變參數）
+- `ctx` - Context for timeout and cancellation control
+- `url` - Webhook URL (string)
+- `msg` - Message structure to send
+- `opts` - Client options (variadic parameters)
 
-#### 返回值
+#### Return Value
 
-- `error` - 如果發送失敗則返回錯誤，否則返回 nil
+- `error` - Returns an error if sending fails, otherwise returns nil
 
-#### 範例
+#### Example
 
 ```go
 ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -260,30 +262,30 @@ err := samhook.SendWithContext(ctx, webhookURL, msg)
 
 ### SendWithRetry
 
-帶重試機制的發送函數。
+Sends a message with retry mechanism.
 
 ```go
 func SendWithRetry(url string, msg Message, opts RetryOptions) error
 ```
 
-#### 參數
+#### Parameters
 
-- `url` - webhook URL（字串）
-- `msg` - 要發送的訊息結構
-- `opts` - 重試選項
+- `url` - Webhook URL (string)
+- `msg` - Message structure to send
+- `opts` - Retry options
 
-#### 返回值
+#### Return Value
 
-- `error` - 如果所有重試都失敗則返回錯誤，否則返回 nil
+- `error` - Returns an error if all retries fail, otherwise returns nil
 
-#### 重試條件
+#### Retry Conditions
 
-- 網路錯誤會自動重試
-- 5xx 伺服器錯誤會自動重試
-- 429 速率限制錯誤會自動重試
-- 4xx 客戶端錯誤不會重試
+- Network errors are automatically retried
+- 5xx server errors are automatically retried
+- 429 rate limit errors are automatically retried
+- 4xx client errors are not retried
 
-#### 範例
+#### Example
 
 ```go
 opts := samhook.DefaultRetryOptions
@@ -291,24 +293,24 @@ opts.MaxRetries = 5
 err := samhook.SendWithRetry(webhookURL, msg, opts)
 ```
 
-## 選項類型
+## Option Types
 
 ### ClientOption
 
-HTTP 客戶端選項函數類型。
+HTTP client option function type.
 
 ```go
 type ClientOption func(*http.Client)
 ```
 
-#### 可用選項
+#### Available Options
 
-- `WithTimeout(timeout time.Duration)` - 設置超時時間
-- `WithClient(client *http.Client)` - 使用自訂 HTTP 客戶端
+- `WithTimeout(timeout time.Duration)` - Sets timeout duration
+- `WithClient(client *http.Client)` - Uses a custom HTTP client
 
 ### RetryOptions
 
-重試選項結構。
+Retry options structure.
 
 ```go
 type RetryOptions struct {
@@ -318,15 +320,15 @@ type RetryOptions struct {
 }
 ```
 
-#### 欄位說明
+#### Field Descriptions
 
-- `MaxRetries` - 最大重試次數
-- `Interval` - 固定重試間隔（如果未設置 Backoff）
-- `Backoff` - 指數退避配置（可選）
+- `MaxRetries` - Maximum number of retries
+- `Interval` - Fixed retry interval (if Backoff is not set)
+- `Backoff` - Exponential backoff configuration (optional)
 
 ### ExponentialBackoff
 
-指數退避配置。
+Exponential backoff configuration.
 
 ```go
 type ExponentialBackoff struct {
@@ -337,18 +339,18 @@ type ExponentialBackoff struct {
 }
 ```
 
-#### 欄位說明
+#### Field Descriptions
 
-- `InitialInterval` - 初始重試間隔
-- `MaxInterval` - 最大重試間隔
-- `Multiplier` - 退避倍數（通常為 2.0）
-- `Jitter` - 是否添加隨機抖動
+- `InitialInterval` - Initial retry interval
+- `MaxInterval` - Maximum retry interval
+- `Multiplier` - Backoff multiplier (typically 2.0)
+- `Jitter` - Whether to add random jitter
 
-## 錯誤類型
+## Error Types
 
 ### WebhookError
 
-自訂錯誤類型，提供詳細的錯誤資訊。
+Custom error type providing detailed error information.
 
 ```go
 type WebhookError struct {
@@ -361,19 +363,19 @@ type WebhookError struct {
 }
 ```
 
-#### 方法
+#### Methods
 
-- `Error() string` - 實現 error 介面
-- `Unwrap() error` - 返回原始錯誤
-- `IsNetworkError() bool` - 判斷是否為網路錯誤
-- `IsSerializationError() bool` - 判斷是否為序列化錯誤
-- `IsAPIError() bool` - 判斷是否為 API 錯誤
-- `GetStatusCode() int` - 返回 HTTP 狀態碼
-- `GetResponseBody() string` - 返回 API 回應體
-- `GetErrorCode() string` - 返回錯誤代碼
-- `DetailedMessage() string` - 返回詳細的多行錯誤訊息
+- `Error() string` - Implements the error interface
+- `Unwrap() error` - Returns the original error
+- `IsNetworkError() bool` - Checks if it's a network error
+- `IsSerializationError() bool` - Checks if it's a serialization error
+- `IsAPIError() bool` - Checks if it's an API error
+- `GetStatusCode() int` - Returns HTTP status code
+- `GetResponseBody() string` - Returns API response body
+- `GetErrorCode() string` - Returns error code
+- `DetailedMessage() string` - Returns detailed multi-line error message
 
-#### 錯誤類型常數
+#### Error Type Constants
 
 ```go
 const (
@@ -384,7 +386,7 @@ const (
 )
 ```
 
-#### 錯誤代碼常數
+#### Error Code Constants
 
 ```go
 const (
@@ -400,37 +402,36 @@ const (
 )
 ```
 
-#### 錯誤構造函數
+#### Error Constructor Functions
 
-- `NewNetworkError(url string, err error) *WebhookError` - 創建網路錯誤
-- `NewSerializationError(err error) *WebhookError` - 創建序列化錯誤
-- `NewAPIError(url string, statusCode int, responseBody string) *WebhookError` - 創建 API 錯誤
+- `NewNetworkError(url string, err error) *WebhookError` - Creates a network error
+- `NewSerializationError(err error) *WebhookError` - Creates a serialization error
+- `NewAPIError(url string, statusCode int, responseBody string) *WebhookError` - Creates an API error
 
-## 錯誤處理
+## Error Handling
 
-所有函數在發生錯誤時都會返回 `error`。從 `Send()` 和 `SendReader()` 返回的錯誤可能是 `*WebhookError` 類型，提供更詳細的錯誤資訊。
+All functions return `error` when an error occurs. Errors returned from `Send()` and `SendReader()` may be of type `*WebhookError`, providing more detailed error information.
 
-### 常見錯誤情況
+### Common Error Scenarios
 
-- **網路錯誤**: 連線失敗、超時等
-- **序列化錯誤**: JSON 序列化失敗
-- **API 錯誤**: HTTP 狀態碼非 200（如 401、429、500 等）
+- **Network errors**: Connection failures, timeouts, etc.
+- **Serialization errors**: JSON serialization failures
+- **API errors**: HTTP status codes other than 200 (e.g., 401, 429, 500, etc.)
 
-### 錯誤處理範例
+### Error Handling Example
 
 ```go
 err := samhook.Send(webhookURL, msg)
 if err != nil {
     if webhookErr, ok := err.(*samhook.WebhookError); ok {
         if webhookErr.IsNetworkError() {
-            // 處理網路錯誤
+            // Handle network error
         } else if webhookErr.IsAPIError() {
             statusCode := webhookErr.GetStatusCode()
-            // 根據狀態碼處理
+            // Handle based on status code
         }
     }
 }
 ```
 
-建議在生產環境中適當處理這些錯誤，並根據錯誤類型實現相應的重試或回退策略。
-
+It is recommended to handle these errors appropriately in production environments and implement corresponding retry or fallback strategies based on error types.

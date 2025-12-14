@@ -1,320 +1,322 @@
-# 架構文檔
+# Architecture Documentation
 
-## 專案架構概述
+English | [繁體中文](architecture_zh_TW.md)
 
-samhook 是一個輕量級的 Go 函式庫，設計目標是提供簡潔、易用的 API 來發送 Slack 和 Mattermost webhook 訊息。
+## Project Architecture Overview
 
-## 設計原則
+samhook is a lightweight Go library designed to provide a simple and easy-to-use API for sending Slack and Mattermost webhook messages.
 
-### 1. 輕量級設計
+## Design Principles
 
-- **無外部依賴**: 僅使用 Go 標準庫
-- **最小化抽象**: 直接映射 Slack/Mattermost webhook API
-- **簡單易用**: 提供直觀的 API 介面
+### 1. Lightweight Design
 
-### 2. 類型安全
+- **Minimal external dependencies**: Uses only high-performance JSON library
+- **Minimal abstraction**: Direct mapping to Slack/Mattermost webhook API
+- **Simple and easy to use**: Provides intuitive API interface
 
-- **強類型**: 所有資料結構都有明確的類型定義
-- **JSON 標籤**: 使用標準 JSON 標籤進行序列化
-- **可選欄位**: 使用 `omitempty` 標籤，僅序列化有值的欄位
+### 2. Type Safety
 
-### 3. 靈活性
+- **Strong typing**: All data structures have explicit type definitions
+- **JSON tags**: Uses standard JSON tags for serialization
+- **Optional fields**: Uses `omitempty` tags to serialize only fields with values
 
-- **多種輸入方式**: 支援結構體和 Reader 兩種輸入方式
-- **鏈式調用**: 支援方法鏈式調用以提升開發體驗
-- **可擴展**: 易於添加新功能
+### 3. Flexibility
 
-## 模組結構
+- **Multiple input methods**: Supports both struct and Reader input methods
+- **Method chaining**: Supports method chaining for better developer experience
+- **Extensible**: Easy to add new features
 
-### 核心模組
+## Module Structure
+
+### Core Modules
 
 ```
 samhook/
-├── message.go    # 資料結構定義
-├── samhook.go    # 核心功能實現
-├── error.go      # 錯誤類型定義
-├── client.go     # HTTP 客戶端配置
-└── retry.go      # 重試機制
+├── message.go    # Data structure definitions
+├── samhook.go   # Core functionality implementation
+├── error.go     # Error type definitions
+├── client.go    # HTTP client configuration
+└── retry.go     # Retry mechanism
 ```
 
 ### message.go
 
-定義了三個核心資料結構：
+Defines three core data structures:
 
-1. **Message** - 訊息主體
-   - 包含基本訊息屬性（文字、使用者名稱、圖示等）
-   - 包含附件列表
+1. **Message** - Message body
+   - Contains basic message attributes (text, username, icon, etc.)
+   - Contains attachment list
 
-2. **Attachment** - 附件結構
-   - 支援豐富的格式化選項
-   - 支援欄位、圖片、作者資訊等
+2. **Attachment** - Attachment structure
+   - Supports rich formatting options
+   - Supports fields, images, author information, etc.
 
-3. **Field** - 欄位結構
-   - 用於在附件中顯示結構化資料
-   - 支援短欄位並排顯示
+3. **Field** - Field structure
+   - Used to display structured data in attachments
+   - Supports short fields for side-by-side display
 
 ### samhook.go
 
-實現了核心功能：
+Implements core functionality:
 
-1. **Send 函數**
-   - 接收 Message 結構
-   - 序列化為 JSON
-   - 發送 HTTP POST 請求
-   - 檢查 HTTP 狀態碼並返回詳細錯誤
+1. **Send function**
+   - Receives Message structure
+   - Serializes to JSON
+   - Sends HTTP POST request
+   - Checks HTTP status code and returns detailed errors
 
-2. **SendReader 函數**
-   - 接收 io.Reader
-   - 直接發送 HTTP POST 請求
-   - 適用於已有 JSON 資料的場景
-   - 檢查 HTTP 狀態碼並返回詳細錯誤
+2. **SendReader function**
+   - Receives io.Reader
+   - Directly sends HTTP POST request
+   - Suitable for scenarios with existing JSON data
+   - Checks HTTP status code and returns detailed errors
 
-3. **AddAttachment 方法**
-   - 為 Message 添加單個附件
-   - 返回 *Message 以支援鏈式調用
+3. **AddAttachment method**
+   - Adds a single attachment to Message
+   - Returns *Message to support method chaining
 
-4. **AddAttachments 方法**
-   - 為 Message 添加多個附件
-   - 返回 *Message 以支援鏈式調用
+4. **AddAttachments method**
+   - Adds multiple attachments to Message
+   - Returns *Message to support method chaining
 
 ### error.go
 
-實現了錯誤處理功能：
+Implements error handling functionality:
 
-1. **WebhookError 類型**
-   - 自訂錯誤類型，提供詳細錯誤資訊
-   - 支援錯誤分類（網路錯誤、序列化錯誤、API 錯誤）
-   - 提供錯誤代碼和詳細訊息
+1. **WebhookError type**
+   - Custom error type providing detailed error information
+   - Supports error classification (network errors, serialization errors, API errors)
+   - Provides error codes and detailed messages
 
-2. **錯誤構造函數**
-   - `NewNetworkError()` - 創建網路錯誤
-   - `NewSerializationError()` - 創建序列化錯誤
-   - `NewAPIError()` - 創建 API 錯誤
+2. **Error constructor functions**
+   - `NewNetworkError()` - Creates network error
+   - `NewSerializationError()` - Creates serialization error
+   - `NewAPIError()` - Creates API error
 
 ### client.go
 
-實現了 HTTP 客戶端配置功能：
+Implements HTTP client configuration functionality:
 
-1. **SendWithOptions 函數**
-   - 支援自訂 HTTP 客戶端配置
-   - 使用選項模式（Options Pattern）
-   - 支援超時配置
+1. **SendWithOptions function**
+   - Supports custom HTTP client configuration
+   - Uses options pattern
+   - Supports timeout configuration
 
-2. **SendWithContext 函數**
-   - 支援 Context 超時和取消
-   - 使用 `http.NewRequestWithContext()`
+2. **SendWithContext function**
+   - Supports Context timeout and cancellation
+   - Uses `http.NewRequestWithContext()`
 
-3. **ClientOption 類型**
-   - `WithTimeout()` - 設置超時
-   - `WithClient()` - 使用自訂客戶端
+3. **ClientOption type**
+   - `WithTimeout()` - Sets timeout
+   - `WithClient()` - Uses custom client
 
 ### retry.go
 
-實現了重試機制：
+Implements retry mechanism:
 
-1. **SendWithRetry 函數**
-   - 支援自動重試失敗的請求
-   - 可配置重試次數和間隔
-   - 智能判斷哪些錯誤可重試
+1. **SendWithRetry function**
+   - Supports automatic retry for failed requests
+   - Configurable retry count and interval
+   - Intelligently determines which errors can be retried
 
-2. **ExponentialBackoff 類型**
-   - 實現指數退避策略
-   - 支援隨機抖動（jitter）
-   - 可配置初始間隔和最大間隔
+2. **ExponentialBackoff type**
+   - Implements exponential backoff strategy
+   - Supports random jitter
+   - Configurable initial interval and maximum interval
 
-## 資料流程
+## Data Flow
 
-### 標準發送流程
+### Standard Send Flow
 
 ```
-使用者代碼
+User Code
     ↓
-創建 Message 結構
+Create Message structure
     ↓
-（可選）添加附件
+(Optional) Add attachments
     ↓
-調用 Send() 函數
+Call Send() function
     ↓
-JSON 序列化
+JSON serialization
     ↓
-HTTP POST 請求
+HTTP POST request
     ↓
 Webhook URL
 ```
 
-### SendReader 流程
+### SendReader Flow
 
 ```
-使用者代碼
+User Code
     ↓
-準備 JSON 資料（io.Reader）
+Prepare JSON data (io.Reader)
     ↓
-調用 SendReader() 函數
+Call SendReader() function
     ↓
-HTTP POST 請求（直接使用 Reader）
+HTTP POST request (directly uses Reader)
     ↓
 Webhook URL
 ```
 
-## 依賴關係
+## Dependencies
 
-### 標準庫依賴
+### Standard Library Dependencies
 
-- `bytes` - 用於建立請求主體
-- `context` - Context 支援（用於超時和取消）
-- `encoding/json` - JSON 序列化
-- `fmt` - 字串格式化
-- `io` - Reader 介面
-- `math` - 數學運算（用於指數退避）
-- `math/rand` - 隨機數生成（用於抖動）
-- `net` - 網路錯誤分類
-- `net/http` - HTTP 客戶端
-- `net/url` - URL 錯誤處理
-- `strings` - 字串操作
-- `time` - 時間和超時控制
+- `bytes` - For creating request body
+- `context` - Context support (for timeout and cancellation)
+- `fmt` - String formatting
+- `io` - Reader interface
+- `math` - Mathematical operations (for exponential backoff)
+- `math/rand` - Random number generation (for jitter)
+- `net` - Network error classification
+- `net/http` - HTTP client
+- `net/url` - URL error handling
+- `strings` - String operations
+- `time` - Time and timeout control
 
-### 無外部依賴
+### External Dependencies
 
-專案不依賴任何第三方套件，確保：
-- 編譯速度快
-- 二進位檔案小
-- 依賴管理簡單
-- 安全性高（減少依賴漏洞風險）
+- `github.com/bytedance/sonic` - High-performance JSON serialization/deserialization library
 
-## 擴展性設計
+The project uses a high-performance JSON library, ensuring:
+- Fast compilation
+- High execution performance
+- Optimized memory usage
+- Simple dependency management
 
-### 已實現的功能
+## Extensibility Design
 
-1. ✅ **可配置 HTTP 客戶端**: 支援自訂超時、自訂客戶端（`SendWithOptions`）
-2. ✅ **回應處理**: 檢查 HTTP 狀態碼並返回詳細錯誤
-3. ✅ **重試機制**: 支援自動重試，包含指數退避策略
-4. ✅ **Context 支援**: 支援超時和取消控制
-5. ✅ **詳細錯誤處理**: 自訂錯誤類型，提供錯誤分類和詳細資訊
+### Implemented Features
 
-### 未來擴展方向
+1. ✅ **Configurable HTTP client**: Supports custom timeout, custom client (`SendWithOptions`)
+2. ✅ **Response handling**: Checks HTTP status code and returns detailed errors
+3. ✅ **Retry mechanism**: Supports automatic retry with exponential backoff strategy
+4. ✅ **Context support**: Supports timeout and cancellation control
+5. ✅ **Detailed error handling**: Custom error type providing error classification and detailed information
 
-1. **批次發送**: 支援一次發送多個訊息
-2. **非同步發送**: 提供輔助函數簡化非同步發送
-3. **速率限制處理**: 自動處理 429 錯誤和請求佇列
+### Future Extension Directions
 
-## 相容性
+1. **Batch sending**: Support sending multiple messages at once
+2. **Async sending**: Provide helper functions to simplify async sending
+3. **Rate limiting handling**: Automatically handle 429 errors and request queuing
+
+## Compatibility
 
 ### Slack Webhook API
 
-samhook 完全相容 Slack Incoming Webhooks API，支援：
-- 基本訊息格式
-- 附件格式
-- 欄位格式
-- 所有標準欄位
+samhook is fully compatible with Slack Incoming Webhooks API, supporting:
+- Basic message format
+- Attachment format
+- Field format
+- All standard fields
 
 ### Mattermost Webhook API
 
-Mattermost 的 webhook API 與 Slack 高度相容，因此 samhook 也可以直接用於 Mattermost。
+Mattermost's webhook API is highly compatible with Slack, so samhook can also be used directly with Mattermost.
 
-## 錯誤處理策略
+## Error Handling Strategy
 
-### 當前實現
+### Current Implementation
 
-- ✅ 所有函數返回 `error`（可能是 `*WebhookError`）
-- ✅ 錯誤分類：網路錯誤、序列化錯誤、API 錯誤
-- ✅ 詳細錯誤資訊：包含狀態碼、回應體、錯誤代碼等
-- ✅ 錯誤分類方法：`IsNetworkError()`, `IsAPIError()`, `IsSerializationError()`
-- ✅ 詳細錯誤訊息：`DetailedMessage()` 提供多行格式
+- ✅ All functions return `error` (may be `*WebhookError`)
+- ✅ Error classification: network errors, serialization errors, API errors
+- ✅ Detailed error information: includes status code, response body, error code, etc.
+- ✅ Error classification methods: `IsNetworkError()`, `IsAPIError()`, `IsSerializationError()`
+- ✅ Detailed error messages: `DetailedMessage()` provides multi-line format
 
-### 錯誤類型
+### Error Types
 
-1. **網路錯誤** (`ErrorTypeNetwork`): HTTP 請求失敗、連線錯誤等
-2. **序列化錯誤** (`ErrorTypeSerialization`): JSON 序列化失敗
-3. **API 錯誤** (`ErrorTypeAPI`): HTTP 狀態碼非 200
-4. **未知錯誤** (`ErrorTypeUnknown`): 無法分類的錯誤
+1. **Network errors** (`ErrorTypeNetwork`): HTTP request failures, connection errors, etc.
+2. **Serialization errors** (`ErrorTypeSerialization`): JSON serialization failures
+3. **API errors** (`ErrorTypeAPI`): HTTP status codes other than 200
+4. **Unknown errors** (`ErrorTypeUnknown`): Errors that cannot be classified
 
-### 錯誤處理流程
+### Error Handling Flow
 
 ```
-發送請求
+Send Request
     ↓
-發生錯誤？
-    ↓ 是
-創建 WebhookError
+Error occurred?
+    ↓ Yes
+Create WebhookError
     ↓
-分類錯誤類型
+Classify error type
     ↓
-返回 WebhookError
+Return WebhookError
     ↓
-使用者可以：
-- 檢查錯誤類型
-- 獲取狀態碼
-- 獲取詳細訊息
-- 實現智能處理
+Users can:
+- Check error type
+- Get status code
+- Get detailed message
+- Implement intelligent handling
 ```
 
-## 效能考量
+## Performance Considerations
 
-### 當前實現
+### Current Implementation
 
-- 使用 `http.DefaultClient`（共用連線池）
-- 同步發送（阻塞直到完成）
-- 輕量級序列化（標準 JSON 編碼器）
+- Uses `http.DefaultClient` (shared connection pool)
+- Synchronous sending (blocks until completion)
+- High-performance serialization (uses sonic JSON library)
 
-### 效能特點
+### Performance Characteristics
 
-- **低延遲**: 直接 HTTP 請求，無額外開銷
-- **低記憶體**: 最小化記憶體分配
-- **高吞吐**: 可並發使用（每個 goroutine 獨立）
+- **Low latency**: Direct HTTP requests, no additional overhead
+- **Low memory**: Minimizes memory allocation
+- **High throughput**: Can be used concurrently (each goroutine is independent)
 
-## 安全性考量
+## Security Considerations
 
-### 當前實現
+### Current Implementation
 
-- 不驗證 webhook URL
-- 不加密傳輸（依賴 HTTPS）
-- 不驗證回應
+- Does not validate webhook URL
+- Does not encrypt transmission (relies on HTTPS)
+- Does not validate response
 
-### 建議
+### Recommendations
 
-1. **URL 驗證**: 驗證 webhook URL 格式
-2. **HTTPS 強制**: 在生產環境強制使用 HTTPS
-3. **回應驗證**: 檢查 HTTP 狀態碼
+1. **URL validation**: Validate webhook URL format
+2. **HTTPS enforcement**: Enforce HTTPS in production environments
+3. **Response validation**: Check HTTP status code
 
-## 測試策略
+## Testing Strategy
 
-### 已實現的測試
+### Implemented Tests
 
-1. ✅ **單元測試**: 
-   - 資料結構序列化測試（`message_test.go`）
-   - 錯誤類型測試（`samhook_test.go`）
-   - 客戶端配置測試（`client_test.go`）
-   - 重試機制測試（`retry_test.go`）
+1. ✅ **Unit tests**: 
+   - Data structure serialization tests (`message_test.go`)
+   - Error type tests (`samhook_test.go`)
+   - Client configuration tests (`client_test.go`)
+   - Retry mechanism tests (`retry_test.go`)
 
-2. ✅ **整合測試**: 
-   - 使用 `httptest` 套件建立 mock HTTP 伺服器
-   - 測試各種 HTTP 狀態碼場景
-   - 測試錯誤處理邏輯
+2. ✅ **Integration tests**: 
+   - Uses `httptest` package to create mock HTTP servers
+   - Tests various HTTP status code scenarios
+   - Tests error handling logic
 
-3. **端到端測試**: 
-   - 可選的整合測試（需要實際 webhook URL）
-   - 使用 build tags 標記為整合測試
+3. **End-to-end tests**: 
+   - Optional integration tests (requires actual webhook URL)
+   - Marked as integration tests using build tags
 
-### 測試覆蓋率
+### Test Coverage
 
-當前測試覆蓋率約為 62%，涵蓋：
-- 所有資料結構的序列化
-- 核心發送功能
-- 錯誤處理邏輯
-- 客戶端配置
-- 重試機制
+Current test coverage is approximately 62%, covering:
+- Serialization of all data structures
+- Core sending functionality
+- Error handling logic
+- Client configuration
+- Retry mechanism
 
-## 維護性
+## Maintainability
 
-### 程式碼組織
+### Code Organization
 
-- **清晰的模組劃分**: 資料結構與功能分離
-- **一致的命名**: 遵循 Go 命名慣例
-- **完整的註解**: 所有公開 API 都有中文註解
+- **Clear module separation**: Data structures separated from functionality
+- **Consistent naming**: Follows Go naming conventions
+- **Complete comments**: All public APIs have comments
 
-### 可維護性特點
+### Maintainability Features
 
-- **簡單的程式碼結構**: 易於理解和修改
-- **最小化複雜度**: 避免過度設計
-- **標準化格式**: 使用 Go 標準格式
-
+- **Simple code structure**: Easy to understand and modify
+- **Minimized complexity**: Avoids over-engineering
+- **Standardized format**: Uses Go standard format

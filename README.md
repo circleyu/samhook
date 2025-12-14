@@ -1,26 +1,28 @@
 # samhook
 
-一個輕量級的 Go 語言函式庫，用於發送 Slack 和 Mattermost webhook 訊息。
+English | [繁體中文](README_zh_TW.md)
 
-## 功能特性
+A lightweight Go library for sending Slack and Mattermost webhook messages.
 
-- ✅ **輕量級**: 無外部依賴，僅使用 Go 標準庫
-- ✅ **類型安全**: 完整的 Go 類型定義
-- ✅ **鏈式調用**: 支援方法鏈式調用以提升開發體驗
-- ✅ **靈活輸入**: 支援結構體和 Reader 兩種輸入方式
-- ✅ **錯誤處理**: 詳細的錯誤類型和分類
-- ✅ **可配置**: 支援自訂 HTTP 客戶端和超時
-- ✅ **重試機制**: 可選的重試功能，支援指數退避
+## Features
 
-## 安裝
+- ✅ **Lightweight**: Minimal external dependencies, uses high-performance JSON library
+- ✅ **Type-safe**: Complete Go type definitions
+- ✅ **Method chaining**: Supports method chaining for better developer experience
+- ✅ **Flexible input**: Supports both struct and Reader input methods
+- ✅ **Error handling**: Detailed error types and classifications
+- ✅ **Configurable**: Supports custom HTTP client and timeout settings
+- ✅ **Retry mechanism**: Optional retry functionality with exponential backoff
+
+## Installation
 
 ```bash
 go get github.com/circleyu/samhook
 ```
 
-## 快速開始
+## Quick Start
 
-### 基本使用
+### Basic Usage
 
 ```go
 package main
@@ -45,42 +47,42 @@ func main() {
 }
 ```
 
-### 使用附件
+### Using Attachments
 
 ```go
 msg := samhook.Message{
-    Text: "系統通知",
+    Text: "System Notification",
 }
 
 attachment := samhook.Attachment{
     Color: samhook.Good,
-    Title: "操作成功",
-    Text:  "所有任務已完成",
+    Title: "Operation Successful",
+    Text:  "All tasks completed",
 }
 
 msg.AddAttachment(attachment)
 samhook.Send(webhookURL, msg)
 ```
 
-### 錯誤處理
+### Error Handling
 
 ```go
 err := samhook.Send(webhookURL, msg)
 if err != nil {
     if webhookErr, ok := err.(*samhook.WebhookError); ok {
         if webhookErr.IsNetworkError() {
-            // 處理網路錯誤，可以重試
+            // Handle network error, can retry
         } else if webhookErr.IsAPIError() {
             statusCode := webhookErr.GetStatusCode()
             if statusCode == 429 {
-                // 處理速率限制
+                // Handle rate limiting
             }
         }
     }
 }
 ```
 
-### 使用自訂客戶端
+### Using Custom Client
 
 ```go
 import (
@@ -88,18 +90,18 @@ import (
     "github.com/circleyu/samhook"
 )
 
-// 使用自訂超時
+// Use custom timeout
 err := samhook.SendWithOptions(webhookURL, msg,
     samhook.WithTimeout(30 * time.Second),
 )
 
-// 使用 Context
+// Use Context
 ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer cancel()
 err := samhook.SendWithContext(ctx, webhookURL, msg)
 ```
 
-### 使用重試機制
+### Using Retry Mechanism
 
 ```go
 opts := samhook.DefaultRetryOptions
@@ -108,26 +110,27 @@ opts.MaxRetries = 5
 err := samhook.SendWithRetry(webhookURL, msg, opts)
 ```
 
-## 文檔
+## Documentation
 
-- [API 文檔](docs/api.md) - 完整的 API 參考
-- [使用範例](docs/examples.md) - 詳細的使用範例
+- [API Documentation](docs/api.md) - Complete API reference
+- [Architecture Documentation](docs/architecture.md) - Project architecture and design
+- [Usage Examples](docs/examples.md) - Detailed usage examples
 
-## 專案結構
+## Project Structure
 
 ```
 samhook/
-├── go.mod          # Go 模組定義
-├── message.go      # 訊息資料結構定義
-├── samhook.go      # 核心發送功能
-├── error.go        # 錯誤類型定義
-├── client.go       # HTTP 客戶端配置
-├── retry.go        # 重試機制
-├── message_test.go # 資料結構測試
-├── samhook_test.go # 核心功能測試
-└── README.md       # 專案說明
+├── go.mod          # Go module definition
+├── message.go      # Message data structure definitions
+├── samhook.go      # Core sending functionality
+├── error.go        # Error type definitions
+├── client.go       # HTTP client configuration
+├── retry.go        # Retry mechanism
+├── message_test.go # Data structure tests
+├── samhook_test.go # Core functionality tests
+└── README.md       # Project documentation
 ```
 
-## 授權
+## License
 
-未指定
+Not specified

@@ -1,12 +1,12 @@
-# Usage Examples
+# 使用範例
 
-English | [繁體中文](examples_zh_TW.md)
+[English](examples.md) | 繁體中文
 
-This document provides various usage examples for the samhook library.
+本文檔提供 samhook 函式庫的各種使用範例。
 
-## Basic Usage
+## 基本使用
 
-### Sending a Simple Text Message
+### 發送簡單文字訊息
 
 ```go
 package main
@@ -30,7 +30,7 @@ func main() {
 }
 ```
 
-### Sending a Message with Emoji Icon
+### 發送帶有 Emoji 圖示的訊息
 
 ```go
 msg := samhook.Message{
@@ -41,7 +41,7 @@ msg := samhook.Message{
 samhook.Send(webhookURL, msg)
 ```
 
-### Sending a Message with Custom Icon
+### 發送帶有自訂圖示的訊息
 
 ```go
 msg := samhook.Message{
@@ -52,172 +52,172 @@ msg := samhook.Message{
 samhook.Send(webhookURL, msg)
 ```
 
-## Using Attachments
+## 使用附件
 
-### Basic Attachment
+### 基本附件
 
 ```go
 msg := samhook.Message{
-    Text: "System Notification",
+    Text: "系統通知",
 }
 
 attachment := samhook.Attachment{
     Color: samhook.Good,
-    Title: "Operation Successful",
-    Text:  "All tasks completed",
+    Title: "操作成功",
+    Text:  "所有任務已完成",
 }
 
 msg.AddAttachment(attachment)
 samhook.Send(webhookURL, msg)
 ```
 
-### Attachment with Fields
+### 帶有欄位的附件
 
 ```go
 msg := samhook.Message{
-    Text: "Deployment Notification",
+    Text: "部署通知",
 }
 
 attachment := samhook.Attachment{
     Color: samhook.Good,
-    Title: "Deployment Successful",
+    Title: "部署成功",
     Fields: []samhook.Field{
         {
-            Title: "Environment",
-            Value: "Production",
+            Title: "環境",
+            Value: "生產環境",
             Short: true,
         },
         {
-            Title: "Version",
+            Title: "版本",
             Value: "v1.2.3",
             Short: true,
         },
         {
-            Title: "Deployment Time",
+            Title: "部署時間",
             Value: "2024-01-15 10:30:00",
             Short: false,
         },
     },
-    Footer: "Deployment System",
+    Footer: "部署系統",
 }
 
 msg.AddAttachment(attachment)
 samhook.Send(webhookURL, msg)
 ```
 
-### Warning Message
+### 警告訊息
 
 ```go
 msg := samhook.Message{
-    Text: "Warning Notification",
+    Text: "警告通知",
 }
 
 attachment := samhook.Attachment{
     Color:   samhook.Warning,
-    Title:   "High Resource Usage",
-    Pretext: "Please note the following resource usage:",
+    Title:   "資源使用率過高",
+    Pretext: "請注意以下資源使用情況：",
     Fields: []samhook.Field{
         {
-            Title: "CPU Usage",
+            Title: "CPU 使用率",
             Value: "85%",
             Short: true,
         },
         {
-            Title: "Memory Usage",
+            Title: "記憶體使用率",
             Value: "78%",
             Short: true,
         },
     },
-    Footer: "Monitoring System",
+    Footer: "監控系統",
 }
 
 msg.AddAttachment(attachment)
 samhook.Send(webhookURL, msg)
 ```
 
-### Error Message
+### 錯誤訊息
 
 ```go
 msg := samhook.Message{
-    Text: "Error Notification",
+    Text: "錯誤通知",
 }
 
 attachment := samhook.Attachment{
     Color: samhook.Danger,
-    Title: "System Error",
-    Text:  "Database connection failed",
+    Title: "系統錯誤",
+    Text:  "資料庫連接失敗",
     Fields: []samhook.Field{
         {
-            Title: "Error Code",
+            Title: "錯誤代碼",
             Value: "DB_CONN_001",
             Short: true,
         },
         {
-            Title: "Occurred At",
+            Title: "發生時間",
             Value: "2024-01-15 10:30:00",
             Short: true,
         },
     },
-    Footer: "Error Tracking System",
+    Footer: "錯誤追蹤系統",
 }
 
 msg.AddAttachment(attachment)
 samhook.Send(webhookURL, msg)
 ```
 
-## Method Chaining
+## 鏈式調用
 
-### Adding Multiple Attachments
+### 添加多個附件
 
 ```go
-msg := samhook.Message{Text: "Multiple Notifications"}
+msg := samhook.Message{Text: "多個通知"}
     .AddAttachment(samhook.Attachment{
         Color: samhook.Good,
-        Title: "Task 1 Completed",
+        Title: "任務 1 完成",
     })
     .AddAttachment(samhook.Attachment{
         Color: samhook.Warning,
-        Title: "Task 2 Needs Attention",
+        Title: "任務 2 需要關注",
     })
 
 samhook.Send(webhookURL, msg)
 ```
 
-### Batch Adding Attachments
+### 批量添加附件
 
 ```go
 attachments := []samhook.Attachment{
     {
         Color: samhook.Good,
-        Title: "Service A Normal",
-        Text:  "All checks passed",
+        Title: "服務 A 正常",
+        Text:  "所有檢查通過",
     },
     {
         Color: samhook.Good,
-        Title: "Service B Normal",
-        Text:  "All checks passed",
+        Title: "服務 B 正常",
+        Text:  "所有檢查通過",
     },
 }
 
-msg := samhook.Message{Text: "Health Check Report"}
+msg := samhook.Message{Text: "健康檢查報告"}
     .AddAttachments(attachments)
 
 samhook.Send(webhookURL, msg)
 ```
 
-## Advanced Usage
+## 進階使用
 
-### Attachment with Author Information
+### 帶有作者資訊的附件
 
 ```go
 attachment := samhook.Attachment{
     Color:      samhook.Good,
-    AuthorName: "Deployment Bot",
+    AuthorName: "部署機器人",
     AuthorLink: "https://example.com/bot",
     AuthorIcon: "https://example.com/bot-icon.png",
-    Title:      "Deployment Complete",
+    Title:      "部署完成",
     TitleLink:  "https://example.com/deployment/123",
-    Text:       "Application successfully deployed to production",
+    Text:       "應用程式已成功部署到生產環境",
 }
 
 msg := samhook.Message{}
@@ -225,13 +225,13 @@ msg.AddAttachment(attachment)
 samhook.Send(webhookURL, msg)
 ```
 
-### Attachment with Images
+### 帶有圖片的附件
 
 ```go
 attachment := samhook.Attachment{
     Color:    samhook.Good,
-    Title:    "Chart Report",
-    Text:     "Weekly data analysis",
+    Title:    "圖表報告",
+    Text:     "本週數據分析",
     ImageURL: "https://example.com/chart.png",
     ThumbURL: "https://example.com/thumb.png",
 }
@@ -241,9 +241,9 @@ msg.AddAttachment(attachment)
 samhook.Send(webhookURL, msg)
 ```
 
-### Using SendReader
+### 使用 SendReader 發送
 
-When you already have a JSON-formatted message:
+當您已經有 JSON 格式的訊息時：
 
 ```go
 package main
@@ -256,7 +256,7 @@ import (
 func main() {
     webhookURL := "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
     
-    // Assume you already have a JSON-formatted message
+    // 假設您已經有 JSON 格式的訊息
     jsonMsg := `{
         "text": "Hello",
         "username": "bot",
@@ -271,32 +271,32 @@ func main() {
 }
 ```
 
-## Real-World Application Scenarios
+## 實際應用場景
 
-### Deployment Notification
+### 部署通知
 
 ```go
 func notifyDeployment(webhookURL, env, version string, success bool) error {
     msg := samhook.Message{
-        Username: "Deployment System",
+        Username: "部署系統",
         IconEmoji: ":rocket:",
     }
     
     attachment := samhook.Attachment{
-        Title: "Deployment Notification",
+        Title: "部署通知",
         Fields: []samhook.Field{
-            {Title: "Environment", Value: env, Short: true},
-            {Title: "Version", Value: version, Short: true},
+            {Title: "環境", Value: env, Short: true},
+            {Title: "版本", Value: version, Short: true},
         },
-        Footer: "CI/CD System",
+        Footer: "CI/CD 系統",
     }
     
     if success {
         attachment.Color = samhook.Good
-        attachment.Text = "Deployment Successful"
+        attachment.Text = "部署成功"
     } else {
         attachment.Color = samhook.Danger
-        attachment.Text = "Deployment Failed"
+        attachment.Text = "部署失敗"
     }
     
     msg.AddAttachment(attachment)
@@ -304,55 +304,55 @@ func notifyDeployment(webhookURL, env, version string, success bool) error {
 }
 ```
 
-## Error Handling
+## 錯誤處理
 
-### Basic Error Handling
+### 基本錯誤處理
 
 ```go
 err := samhook.Send(webhookURL, msg)
 if err != nil {
-    log.Printf("Send failed: %v", err)
+    log.Printf("發送失敗: %v", err)
 }
 ```
 
-### Detailed Error Handling with WebhookError
+### 使用 WebhookError 進行詳細錯誤處理
 
 ```go
 err := samhook.Send(webhookURL, msg)
 if err != nil {
     if webhookErr, ok := err.(*samhook.WebhookError); ok {
-        // Check error type
+        // 檢查錯誤類型
         if webhookErr.IsNetworkError() {
-            log.Printf("Network error: %v", webhookErr)
-            // Can retry
+            log.Printf("網路錯誤: %v", webhookErr)
+            // 可以重試
         } else if webhookErr.IsAPIError() {
             statusCode := webhookErr.GetStatusCode()
-            log.Printf("API error (status code %d): %v", statusCode, webhookErr)
+            log.Printf("API 錯誤 (狀態碼 %d): %v", statusCode, webhookErr)
             
-            // Handle specific status codes
+            // 處理特定狀態碼
             switch statusCode {
             case 401:
-                log.Println("Authentication failed, please check webhook URL")
+                log.Println("認證失敗，請檢查 webhook URL")
             case 429:
-                log.Println("Rate limited, please retry later")
+                log.Println("速率限制，請稍後重試")
             case 500, 502, 503, 504:
-                log.Println("Server error, can retry")
+                log.Println("伺服器錯誤，可以重試")
             }
         } else if webhookErr.IsSerializationError() {
-            log.Printf("Serialization error: %v", webhookErr)
+            log.Printf("序列化錯誤: %v", webhookErr)
         }
         
-        // Get detailed error message
+        // 獲取詳細錯誤訊息
         log.Println(webhookErr.DetailedMessage())
     } else {
-        log.Printf("Unknown error: %v", err)
+        log.Printf("未知錯誤: %v", err)
     }
 }
 ```
 
-## Advanced Configuration
+## 進階配置
 
-### Using Custom Timeout
+### 使用自訂超時
 
 ```go
 import (
@@ -360,15 +360,15 @@ import (
     "github.com/circleyu/samhook"
 )
 
-msg := samhook.Message{Text: "Important Notification"}
+msg := samhook.Message{Text: "重要通知"}
 
-// Set 30 second timeout
+// 設置 30 秒超時
 err := samhook.SendWithOptions(webhookURL, msg,
     samhook.WithTimeout(30 * time.Second),
 )
 ```
 
-### Using Custom HTTP Client
+### 使用自訂 HTTP 客戶端
 
 ```go
 import (
@@ -389,7 +389,7 @@ err := samhook.SendWithOptions(webhookURL, msg,
 )
 ```
 
-### Using Context for Timeout and Cancellation
+### 使用 Context 進行超時和取消
 
 ```go
 import (
@@ -398,37 +398,37 @@ import (
     "github.com/circleyu/samhook"
 )
 
-// Use Context timeout
+// 使用 Context 超時
 ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 defer cancel()
 
 err := samhook.SendWithContext(ctx, webhookURL, msg)
 
-// Use Context cancellation
+// 使用 Context 取消
 ctx, cancel := context.WithCancel(context.Background())
 go func() {
     time.Sleep(5 * time.Second)
-    cancel() // Cancel request after 5 seconds
+    cancel() // 5 秒後取消請求
 }()
 
 err := samhook.SendWithContext(ctx, webhookURL, msg)
 ```
 
-## Retry Mechanism
+## 重試機制
 
-### Basic Retry
+### 基本重試
 
 ```go
 import "github.com/circleyu/samhook"
 
-msg := samhook.Message{Text: "Important Notification"}
+msg := samhook.Message{Text: "重要通知"}
 
-// Use default retry options (max 3 retries, 1 second interval)
+// 使用預設重試選項（最多重試 3 次，間隔 1 秒）
 opts := samhook.DefaultRetryOptions
 err := samhook.SendWithRetry(webhookURL, msg, opts)
 ```
 
-### Custom Retry Configuration
+### 自訂重試配置
 
 ```go
 import (
@@ -436,7 +436,7 @@ import (
     "github.com/circleyu/samhook"
 )
 
-msg := samhook.Message{Text: "Important Notification"}
+msg := samhook.Message{Text: "重要通知"}
 
 opts := samhook.RetryOptions{
     MaxRetries: 5,
@@ -445,29 +445,29 @@ opts := samhook.RetryOptions{
         InitialInterval: 1 * time.Second,
         MaxInterval:     30 * time.Second,
         Multiplier:      2.0,
-        Jitter:          true, // Add random jitter to avoid thundering herd
+        Jitter:          true, // 添加隨機抖動避免雷群效應
     },
 }
 
 err := samhook.SendWithRetry(webhookURL, msg, opts)
 ```
 
-### Retry Scenario Example
+### 重試場景範例
 
 ```go
-// Handle temporary network failures
+// 處理暫時性網路故障
 func sendWithRetry(webhookURL string, msg samhook.Message) error {
     opts := samhook.DefaultRetryOptions
     opts.MaxRetries = 3
     
     err := samhook.SendWithRetry(webhookURL, msg, opts)
     if err != nil {
-        // Check if it's a retryable error
+        // 檢查是否為可重試的錯誤
         if webhookErr, ok := err.(*samhook.WebhookError); ok {
             if webhookErr.IsNetworkError() {
-                log.Printf("Network error, retried %d times: %v", opts.MaxRetries, err)
+                log.Printf("網路錯誤，已重試 %d 次: %v", opts.MaxRetries, err)
             } else if webhookErr.IsAPIError() && webhookErr.GetStatusCode() >= 500 {
-                log.Printf("Server error, retried %d times: %v", opts.MaxRetries, err)
+                log.Printf("伺服器錯誤，已重試 %d 次: %v", opts.MaxRetries, err)
             }
         }
     }
@@ -475,12 +475,12 @@ func sendWithRetry(webhookURL string, msg samhook.Message) error {
 }
 ```
 
-### Monitoring Alert
+### 監控告警
 
 ```go
 func sendAlert(webhookURL, alertType, message string, severity int) error {
     msg := samhook.Message{
-        Username: "Monitoring System",
+        Username: "監控系統",
         IconEmoji: ":warning:",
     }
     
@@ -498,7 +498,7 @@ func sendAlert(webhookURL, alertType, message string, severity int) error {
         Color: color,
         Title: alertType,
         Text:  message,
-        Footer: "Monitoring System",
+        Footer: "監控系統",
     }
     
     msg.AddAttachment(attachment)
@@ -506,21 +506,21 @@ func sendAlert(webhookURL, alertType, message string, severity int) error {
 }
 ```
 
-### Task Completion Notification
+### 任務完成通知
 
 ```go
 func notifyTaskCompletion(webhookURL, taskName, duration string) error {
     msg := samhook.Message{
-        Text:     "Task Completion Notification",
-        Username: "Task System",
+        Text:     "任務完成通知",
+        Username: "任務系統",
     }
     
     attachment := samhook.Attachment{
         Color: samhook.Good,
-        Title: "Task Completed",
+        Title: "任務已完成",
         Fields: []samhook.Field{
-            {Title: "Task Name", Value: taskName, Short: false},
-            {Title: "Execution Time", Value: duration, Short: true},
+            {Title: "任務名稱", Value: taskName, Short: false},
+            {Title: "執行時間", Value: duration, Short: true},
         },
     }
     

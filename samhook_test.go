@@ -2,12 +2,13 @@ package samhook
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/bytedance/sonic"
 )
 
 // mockWebhookServer 創建一個 mock webhook 伺服器
@@ -61,7 +62,7 @@ func TestSend_RequestFormat(t *testing.T) {
 
 		// 驗證 JSON 格式
 		var data map[string]interface{}
-		if err := json.Unmarshal(body, &data); err != nil {
+		if err := sonic.Unmarshal(body, &data); err != nil {
 			t.Errorf("invalid JSON: %v", err)
 		}
 
@@ -278,4 +279,3 @@ func TestWebhookError_Methods(t *testing.T) {
 		t.Errorf("expected error code %s, got %s", ErrorCodeAPIUnauthorized, err.GetErrorCode())
 	}
 }
-

@@ -3,10 +3,11 @@ package samhook
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/bytedance/sonic"
 )
 
 // ClientOption 客戶端選項
@@ -41,7 +42,7 @@ func SendWithOptions(url string, msg Message, opts ...ClientOption) error {
 		opt(client)
 	}
 
-	payloadBytes, err := json.Marshal(msg)
+	payloadBytes, err := sonic.Marshal(msg)
 	if err != nil {
 		return NewSerializationError(err)
 	}
@@ -80,7 +81,7 @@ func SendWithContext(ctx context.Context, url string, msg Message, opts ...Clien
 		opt(client)
 	}
 
-	payloadBytes, err := json.Marshal(msg)
+	payloadBytes, err := sonic.Marshal(msg)
 	if err != nil {
 		return NewSerializationError(err)
 	}

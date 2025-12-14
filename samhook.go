@@ -2,9 +2,10 @@ package samhook
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
+
+	"github.com/bytedance/sonic"
 )
 
 // AddAttachment 添加一個attachment
@@ -21,7 +22,7 @@ func (m *Message) AddAttachments(attachments []Attachment) *Message {
 
 // Send 發送message
 func Send(url string, msg Message) error {
-	payloadBytes, err := json.Marshal(msg)
+	payloadBytes, err := sonic.Marshal(msg)
 	if err != nil {
 		return NewSerializationError(err)
 	}

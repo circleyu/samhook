@@ -1,10 +1,11 @@
 package samhook
 
 import (
-	"encoding/json"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/bytedance/sonic"
 )
 
 func TestMessage_JSONSerialization(t *testing.T) {
@@ -40,22 +41,22 @@ func TestMessage_JSONSerialization(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := json.Marshal(tt.message)
+			got, err := sonic.Marshal(tt.message)
 			if err != nil {
-				t.Fatalf("json.Marshal() error = %v", err)
+				t.Fatalf("sonic.Marshal() error = %v", err)
 			}
 
 			// 解析 JSON 進行比較（忽略順序）
 			var gotMap, wantMap map[string]interface{}
-			if err := json.Unmarshal(got, &gotMap); err != nil {
+			if err := sonic.Unmarshal(got, &gotMap); err != nil {
 				t.Fatalf("failed to unmarshal got: %v", err)
 			}
-			if err := json.Unmarshal([]byte(tt.want), &wantMap); err != nil {
+			if err := sonic.Unmarshal([]byte(tt.want), &wantMap); err != nil {
 				t.Fatalf("failed to unmarshal want: %v", err)
 			}
 
 			if !reflect.DeepEqual(gotMap, wantMap) {
-				t.Errorf("json.Marshal() = %s, want %s", got, tt.want)
+				t.Errorf("sonic.Marshal() = %s, want %s", got, tt.want)
 			}
 		})
 	}
@@ -67,9 +68,9 @@ func TestMessage_OmitEmpty(t *testing.T) {
 		// 其他欄位為空
 	}
 
-	data, err := json.Marshal(msg)
+	data, err := sonic.Marshal(msg)
 	if err != nil {
-		t.Fatalf("json.Marshal() error = %v", err)
+		t.Fatalf("sonic.Marshal() error = %v", err)
 	}
 
 	jsonStr := string(data)
@@ -100,9 +101,9 @@ func TestMessage_JSONTags(t *testing.T) {
 		Channel:   "#channel",
 	}
 
-	data, err := json.Marshal(msg)
+	data, err := sonic.Marshal(msg)
 	if err != nil {
-		t.Fatalf("json.Marshal() error = %v", err)
+		t.Fatalf("sonic.Marshal() error = %v", err)
 	}
 
 	jsonStr := string(data)
@@ -138,15 +139,15 @@ func TestMessage_RoundTrip(t *testing.T) {
 	}
 
 	// 序列化
-	data, err := json.Marshal(original)
+	data, err := sonic.Marshal(original)
 	if err != nil {
-		t.Fatalf("json.Marshal() error = %v", err)
+		t.Fatalf("sonic.Marshal() error = %v", err)
 	}
 
 	// 反序列化
 	var unmarshaled Message
-	if err := json.Unmarshal(data, &unmarshaled); err != nil {
-		t.Fatalf("json.Unmarshal() error = %v", err)
+	if err := sonic.Unmarshal(data, &unmarshaled); err != nil {
+		t.Fatalf("sonic.Unmarshal() error = %v", err)
 	}
 
 	// 比較
@@ -176,9 +177,9 @@ func TestAttachment_JSONSerialization(t *testing.T) {
 		},
 	}
 
-	data, err := json.Marshal(attachment)
+	data, err := sonic.Marshal(attachment)
 	if err != nil {
-		t.Fatalf("json.Marshal() error = %v", err)
+		t.Fatalf("sonic.Marshal() error = %v", err)
 	}
 
 	// 驗證關鍵欄位存在
@@ -213,9 +214,9 @@ func TestAttachment_OmitEmpty(t *testing.T) {
 		// 其他欄位為空
 	}
 
-	data, err := json.Marshal(attachment)
+	data, err := sonic.Marshal(attachment)
 	if err != nil {
-		t.Fatalf("json.Marshal() error = %v", err)
+		t.Fatalf("sonic.Marshal() error = %v", err)
 	}
 
 	jsonStr := string(data)
@@ -258,17 +259,17 @@ func TestField_JSONSerialization(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := json.Marshal(tt.field)
+			got, err := sonic.Marshal(tt.field)
 			if err != nil {
-				t.Fatalf("json.Marshal() error = %v", err)
+				t.Fatalf("sonic.Marshal() error = %v", err)
 			}
 
 			var gotMap, wantMap map[string]interface{}
-			json.Unmarshal(got, &gotMap)
-			json.Unmarshal([]byte(tt.want), &wantMap)
+			sonic.Unmarshal(got, &gotMap)
+			sonic.Unmarshal([]byte(tt.want), &wantMap)
 
 			if !reflect.DeepEqual(gotMap, wantMap) {
-				t.Errorf("json.Marshal() = %s, want %s", got, tt.want)
+				t.Errorf("sonic.Marshal() = %s, want %s", got, tt.want)
 			}
 		})
 	}
@@ -281,9 +282,9 @@ func TestField_BooleanSerialization(t *testing.T) {
 		Short: true,
 	}
 
-	data, err := json.Marshal(field)
+	data, err := sonic.Marshal(field)
 	if err != nil {
-		t.Fatalf("json.Marshal() error = %v", err)
+		t.Fatalf("sonic.Marshal() error = %v", err)
 	}
 
 	// 驗證布林值正確序列化為 true/false（不是 1/0）
@@ -311,9 +312,9 @@ func TestMessage_WithAttachments(t *testing.T) {
 		},
 	}
 
-	data, err := json.Marshal(msg)
+	data, err := sonic.Marshal(msg)
 	if err != nil {
-		t.Fatalf("json.Marshal() error = %v", err)
+		t.Fatalf("sonic.Marshal() error = %v", err)
 	}
 
 	// 驗證嵌套結構正確序列化
@@ -327,8 +328,8 @@ func TestMessage_WithAttachments(t *testing.T) {
 
 	// 驗證可以反序列化
 	var unmarshaled Message
-	if err := json.Unmarshal(data, &unmarshaled); err != nil {
-		t.Fatalf("json.Unmarshal() error = %v", err)
+	if err := sonic.Unmarshal(data, &unmarshaled); err != nil {
+		t.Fatalf("sonic.Unmarshal() error = %v", err)
 	}
 
 	if len(unmarshaled.Attachments) != 2 {
