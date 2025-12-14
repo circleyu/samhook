@@ -426,6 +426,11 @@ msg := samhook.Message{Text: "重要通知"}
 // 使用預設重試選項（最多重試 3 次，間隔 1 秒）
 opts := samhook.DefaultRetryOptions
 err := samhook.SendWithRetry(webhookURL, msg, opts)
+
+// 使用自訂超時的重試
+err := samhook.SendWithRetry(webhookURL, msg, opts, 
+    samhook.WithTimeout(30*time.Second),
+)
 ```
 
 ### 自訂重試配置
@@ -527,4 +532,101 @@ func notifyTaskCompletion(webhookURL, taskName, duration string) error {
     msg.AddAttachment(attachment)
     return samhook.Send(webhookURL, msg)
 }
+```
+
+## URL 驗證
+
+### 驗證 Webhook URL
+
+```go
+import "github.com/circleyu/samhook"
+
+err := samhook.ValidateWebhookURL(webhookURL)
+if err != nil {
+    log.Fatalf("無效的 webhook URL: %v", err)
+}
+
+// 繼續發送
+msg := samhook.Message{Text: "Hello"}
+samhook.Send(webhookURL, msg)
+```
+
+### 發送前驗證
+
+```go
+func sendWithValidation(webhookURL string, msg samhook.Message) error {
+    if err := samhook.ValidateWebhookURL(webhookURL); err != nil {
+        return fmt.Errorf("webhook URL 驗證失敗: %w", err)
+    }
+    return samhook.Send(webhookURL, msg)
+}
+```
+
+## 日誌記錄
+
+### 基本日誌記錄
+
+```go
+import (
+    "os"
+    "github.com/circleyu/samhook"
+)
+
+// 啟用日誌記錄到標準輸出
+samhook.SetLoggerWriter(os.Stdout)
+
+msg := samhook.Message{Text: "Hello"}
+samhook.Send(webhookURL, msg)
+// 輸出: [samhook] POST https://hooks.slack.com/... - success - duration: 123ms
+```
+
+### 自訂日誌記錄器
+
+```go
+import (
+    "log"
+    "os"
+    "time"
+    "github.com/circleyu/samhook"
+)
+
+type MyLogger struct {
+    logger *log.Logger
+}
+
+func (l *MyLogger) LogRequest(url string, method string, duration time.Duration, err error) {
+    status := "OK"
+    if err != nil {
+        status = "ERROR"
+    }
+    l.logger.Printf("[%s] %s %s 耗時 %v", status, method, url, duration)
+}
+
+// 使用自訂日誌記錄器
+logger := &MyLogger{
+    logger: log.New(os.Stderr, "[webhook] ", log.LstdFlags),
+}
+samhook.SetLogger(logger)
+
+msg := samhook.Message{Text: "Hello"}
+samhook.Send(webhookURL, msg)
+```
+
+### 使用自訂客戶端選項的重試
+
+```go
+import (
+    "time"
+    "github.com/circleyu/samhook"
+)
+
+msg := samhook.Message{Text: "重要通知"}
+
+opts := samhook.DefaultRetryOptions
+opts.MaxRetries = 5
+
+// 使用自訂超時的重試
+err := samhook.SendWithRetry(webhookURL, msg, opts, 
+    samhook.WithTimeout(30*time.Second),
+)
 ```

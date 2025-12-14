@@ -262,10 +262,10 @@ err := samhook.SendWithContext(ctx, webhookURL, msg)
 
 ### SendWithRetry
 
-帶重試機制的發送函數。
+帶重試機制的發送函數，支援自訂客戶端配置。
 
 ```go
-func SendWithRetry(url string, msg Message, opts RetryOptions) error
+func SendWithRetry(url string, msg Message, opts RetryOptions, clientOpts ...ClientOption) error
 ```
 
 #### 參數
@@ -273,6 +273,7 @@ func SendWithRetry(url string, msg Message, opts RetryOptions) error
 - `url` - webhook URL（字串）
 - `msg` - 要發送的訊息結構
 - `opts` - 重試選項
+- `clientOpts` - 可選的客戶端配置選項（可變參數）
 
 #### 返回值
 
@@ -291,6 +292,9 @@ func SendWithRetry(url string, msg Message, opts RetryOptions) error
 opts := samhook.DefaultRetryOptions
 opts.MaxRetries = 5
 err := samhook.SendWithRetry(webhookURL, msg, opts)
+
+// 使用自訂超時
+err := samhook.SendWithRetry(webhookURL, msg, opts, samhook.WithTimeout(30*time.Second))
 ```
 
 ## 選項類型
@@ -391,16 +395,21 @@ const (
 ```go
 const (
     ErrorCodeNetworkTimeout     = "NETWORK_TIMEOUT"
-    ErrorCodeNetworkConnection  = "NETWORK_CONNECTION"
+    ErrorCodeNetworkConnection = "NETWORK_CONNECTION"
     ErrorCodeNetworkDNS         = "NETWORK_DNS"
-    ErrorCodeSerializationJSON  = "SERIALIZATION_JSON"
-    ErrorCodeAPIUnauthorized    = "API_UNAUTHORIZED"
-    ErrorCodeAPIForbidden       = "API_FORBIDDEN"
-    ErrorCodeAPINotFound        = "API_NOT_FOUND"
-    ErrorCodeAPIRateLimit       = "API_RATE_LIMIT"
+    ErrorCodeSerializationJSON = "SERIALIZATION_JSON"
+    ErrorCodeAPIUnauthorized   = "API_UNAUTHORIZED"
+    ErrorCodeAPIForbidden      = "API_FORBIDDEN"
+    ErrorCodeAPINotFound       = "API_NOT_FOUND"
+    ErrorCodeAPIRateLimit      = "API_RATE_LIMIT"
     ErrorCodeAPIServerError    = "API_SERVER_ERROR"
 )
 ```
+
+**注意**：網路錯誤現在會自動分類為更具體的類型：
+- `NETWORK_TIMEOUT` - 請求超時
+- `NETWORK_DNS` - DNS 解析失敗
+- `NETWORK_CONNECTION` - 連接失敗
 
 #### 錯誤構造函數
 
@@ -435,3 +444,81 @@ if err != nil {
 ```
 
 建議在生產環境中適當處理這些錯誤，並根據錯誤類型實現相應的重試或回退策略。
+
+## 工具函數
+
+### ValidateWebhookURL
+
+驗證 webhook URL 格式和協議。
+
+```go
+func ValidateWebhookURL(webhookURL string) error
+```
+
+#### 參數
+
+- `webhookURL` - 要驗證的 webhook URL（字串）
+
+#### 返回值
+
+- `error` - 如果驗證失敗則返回錯誤，否則返回 nil
+
+#### 驗證規則
+
+- URL 不能為空
+- URL 必須是有效的 URL 格式
+- URL 協議必須是 `http` 或 `https`
+- URL 必須有主機名
+
+#### 範例
+
+```go
+err := samhook.ValidateWebhookURL(webhookURL)
+if err != nil {
+    log.Fatalf("無效的 webhook URL: %v", err)
+}
+```
+
+## 日誌記錄
+
+### Logger 介面
+
+可選的日誌記錄介面，用於追蹤請求。
+
+```go
+type Logger interface {
+    LogRequest(url string, method string, duration time.Duration, err error)
+}
+```
+
+### SetLogger
+
+設置包級別的日誌記錄器。
+
+```go
+func SetLogger(logger Logger)
+```
+
+### SetLoggerWriter
+
+使用 `io.Writer` 設置包級別的日誌記錄器。
+
+```go
+func SetLoggerWriter(w io.Writer)
+```
+
+#### 範例
+
+```go
+import (
+    "os"
+    "github.com/circleyu/samhook"
+)
+
+// 使用標準輸出進行日誌記錄
+samhook.SetLoggerWriter(os.Stdout)
+
+// 或使用自訂日誌記錄器
+customLogger := &MyLogger{}
+samhook.SetLogger(customLogger)
+```

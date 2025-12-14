@@ -528,3 +528,100 @@ func notifyTaskCompletion(webhookURL, taskName, duration string) error {
     return samhook.Send(webhookURL, msg)
 }
 ```
+
+## URL Validation
+
+### Validating Webhook URL
+
+```go
+import "github.com/circleyu/samhook"
+
+err := samhook.ValidateWebhookURL(webhookURL)
+if err != nil {
+    log.Fatalf("Invalid webhook URL: %v", err)
+}
+
+// Proceed with sending
+msg := samhook.Message{Text: "Hello"}
+samhook.Send(webhookURL, msg)
+```
+
+### Validating Before Sending
+
+```go
+func sendWithValidation(webhookURL string, msg samhook.Message) error {
+    if err := samhook.ValidateWebhookURL(webhookURL); err != nil {
+        return fmt.Errorf("webhook URL validation failed: %w", err)
+    }
+    return samhook.Send(webhookURL, msg)
+}
+```
+
+## Logging
+
+### Basic Logging
+
+```go
+import (
+    "os"
+    "github.com/circleyu/samhook"
+)
+
+// Enable logging to standard output
+samhook.SetLoggerWriter(os.Stdout)
+
+msg := samhook.Message{Text: "Hello"}
+samhook.Send(webhookURL, msg)
+// Output: [samhook] POST https://hooks.slack.com/... - success - duration: 123ms
+```
+
+### Custom Logger
+
+```go
+import (
+    "log"
+    "os"
+    "time"
+    "github.com/circleyu/samhook"
+)
+
+type MyLogger struct {
+    logger *log.Logger
+}
+
+func (l *MyLogger) LogRequest(url string, method string, duration time.Duration, err error) {
+    status := "OK"
+    if err != nil {
+        status = "ERROR"
+    }
+    l.logger.Printf("[%s] %s %s took %v", status, method, url, duration)
+}
+
+// Use custom logger
+logger := &MyLogger{
+    logger: log.New(os.Stderr, "[webhook] ", log.LstdFlags),
+}
+samhook.SetLogger(logger)
+
+msg := samhook.Message{Text: "Hello"}
+samhook.Send(webhookURL, msg)
+```
+
+### Retry with Custom Client Options
+
+```go
+import (
+    "time"
+    "github.com/circleyu/samhook"
+)
+
+msg := samhook.Message{Text: "Important Notification"}
+
+opts := samhook.DefaultRetryOptions
+opts.MaxRetries = 5
+
+// Use retry with custom timeout
+err := samhook.SendWithRetry(webhookURL, msg, opts, 
+    samhook.WithTimeout(30*time.Second),
+)
+```

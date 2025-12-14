@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/bytedance/sonic"
 )
@@ -18,6 +19,40 @@ func (m *Message) AddAttachment(attachment Attachment) *Message {
 func (m *Message) AddAttachments(attachments []Attachment) *Message {
 	m.Attachments = append(m.Attachments, attachments...)
 	return m
+}
+
+// sendRequest 內部函數，統一處理 HTTP 請求
+func sendRequest(client *http.Client, req *http.Request) error {
+	start := time.Now()
+	resp, err := client.Do(req)
+	duration := time.Since(start)
+
+	// 記錄請求日誌（如果設置了日誌記錄器）
+	if defaultPackageLogger != nil {
+		defaultPackageLogger.LogRequest(req.URL.String(), req.Method, duration, err)
+	}
+
+	if err != nil {
+		return NewNetworkError(req.URL.String(), err)
+	}
+	defer resp.Body.Close()
+
+	// 檢查 HTTP 狀態碼
+	if resp.StatusCode != http.StatusOK {
+		// 讀取錯誤回應體
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		responseBody := string(bodyBytes)
+		apiErr := NewAPIError(req.URL.String(), resp.StatusCode, responseBody)
+
+		// 記錄 API 錯誤日誌
+		if defaultPackageLogger != nil {
+			defaultPackageLogger.LogRequest(req.URL.String(), req.Method, duration, apiErr)
+		}
+
+		return apiErr
+	}
+
+	return nil
 }
 
 // Send 發送message
@@ -35,21 +70,7 @@ func Send(url string, msg Message) error {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return NewNetworkError(url, err)
-	}
-	defer resp.Body.Close()
-
-	// 檢查 HTTP 狀態碼
-	if resp.StatusCode != http.StatusOK {
-		// 讀取錯誤回應體
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		responseBody := string(bodyBytes)
-		return NewAPIError(url, resp.StatusCode, responseBody)
-	}
-
-	return nil
+	return sendRequest(http.DefaultClient, req)
 }
 
 // SendReader 發送message
@@ -61,19 +82,5 @@ func SendReader(url string, r io.Reader) error {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return NewNetworkError(url, err)
-	}
-	defer resp.Body.Close()
-
-	// 檢查 HTTP 狀態碼
-	if resp.StatusCode != http.StatusOK {
-		// 讀取錯誤回應體
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		responseBody := string(bodyBytes)
-		return NewAPIError(url, resp.StatusCode, responseBody)
-	}
-
-	return nil
+	return sendRequest(http.DefaultClient, req)
 }

@@ -3,7 +3,6 @@ package samhook
 import (
 	"bytes"
 	"context"
-	"io"
 	"net/http"
 	"time"
 
@@ -55,20 +54,7 @@ func SendWithOptions(url string, msg Message, opts ...ClientOption) error {
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return NewNetworkError(url, err)
-	}
-	defer resp.Body.Close()
-
-	// 檢查 HTTP 狀態碼
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		responseBody := string(bodyBytes)
-		return NewAPIError(url, resp.StatusCode, responseBody)
-	}
-
-	return nil
+	return sendRequest(client, req)
 }
 
 // SendWithContext 使用 Context 發送訊息
@@ -94,18 +80,5 @@ func SendWithContext(ctx context.Context, url string, msg Message, opts ...Clien
 
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := client.Do(req)
-	if err != nil {
-		return NewNetworkError(url, err)
-	}
-	defer resp.Body.Close()
-
-	// 檢查 HTTP 狀態碼
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		responseBody := string(bodyBytes)
-		return NewAPIError(url, resp.StatusCode, responseBody)
-	}
-
-	return nil
+	return sendRequest(client, req)
 }

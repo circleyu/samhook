@@ -47,6 +47,9 @@ type WebhookError struct {
 
 	// URL webhook URL（用於上下文）
 	URL string
+
+	// ErrorCode 具體的錯誤代碼（用於更細緻的分類）
+	ErrorCode string
 }
 
 // Error 實現 error 介面，提供詳細的錯誤訊息
@@ -109,10 +112,15 @@ func (e *WebhookError) GetResponseBody() string {
 
 // GetErrorCode 返回錯誤代碼
 func (e *WebhookError) GetErrorCode() string {
+	// 如果已經設置了錯誤代碼，直接返回
+	if e.ErrorCode != "" {
+		return e.ErrorCode
+	}
+
 	// 根據類型和狀態碼返回具體錯誤代碼
 	if e.IsNetworkError() {
-		// 可以根據原始錯誤進一步分類
-		return ErrorCodeNetworkConnection
+		// 根據原始錯誤進一步分類
+		return classifyNetworkError(e.Err)
 	}
 	if e.IsAPIError() {
 		switch e.StatusCode {
@@ -127,11 +135,51 @@ func (e *WebhookError) GetErrorCode() string {
 		case 500, 502, 503, 504:
 			return ErrorCodeAPIServerError
 		}
+		return ErrorCodeAPIServerError
 	}
 	if e.IsSerializationError() {
 		return ErrorCodeSerializationJSON
 	}
 	return ErrorTypeUnknown
+}
+
+// classifyNetworkError 分類網路錯誤類型
+func classifyNetworkError(err error) string {
+	if err == nil {
+		return ErrorCodeNetworkConnection
+	}
+
+	// 檢查是否為 URL 錯誤
+	if urlErr, ok := err.(*url.Error); ok {
+		// 檢查是否為超時錯誤
+		if urlErr.Timeout() {
+			return ErrorCodeNetworkTimeout
+		}
+		// 檢查是否為 DNS 錯誤
+		if _, ok := urlErr.Err.(*net.DNSError); ok {
+			return ErrorCodeNetworkDNS
+		}
+		// 檢查是否為操作錯誤（連接錯誤）
+		if _, ok := urlErr.Err.(*net.OpError); ok {
+			return ErrorCodeNetworkConnection
+		}
+	}
+
+	// 檢查是否為 DNS 錯誤
+	if _, ok := err.(*net.DNSError); ok {
+		return ErrorCodeNetworkDNS
+	}
+
+	// 檢查是否為操作錯誤
+	if opErr, ok := err.(*net.OpError); ok {
+		if opErr.Timeout() {
+			return ErrorCodeNetworkTimeout
+		}
+		return ErrorCodeNetworkConnection
+	}
+
+	// 預設為連接錯誤
+	return ErrorCodeNetworkConnection
 }
 
 // DetailedMessage 返回詳細的錯誤訊息（多行格式）
@@ -161,13 +209,27 @@ func (e *WebhookError) DetailedMessage() string {
 	return buf.String()
 }
 
-// NewNetworkError 創建網路錯誤
+// NewNetworkError 創建網路錯誤，自動分類錯誤類型
 func NewNetworkError(url string, err error) *WebhookError {
+	errorCode := classifyNetworkError(err)
+	message := fmt.Sprintf("network error: %v", err)
+
+	// 根據錯誤類型提供更詳細的訊息
+	switch errorCode {
+	case ErrorCodeNetworkTimeout:
+		message = fmt.Sprintf("network timeout: %v", err)
+	case ErrorCodeNetworkDNS:
+		message = fmt.Sprintf("DNS resolution failed: %v", err)
+	case ErrorCodeNetworkConnection:
+		message = fmt.Sprintf("connection failed: %v", err)
+	}
+
 	return &WebhookError{
-		Type:    ErrorTypeNetwork,
-		Message: fmt.Sprintf("network error: %v", err),
-		Err:     err,
-		URL:     url,
+		Type:      ErrorTypeNetwork,
+		Message:   message,
+		Err:       err,
+		URL:       url,
+		ErrorCode: errorCode,
 	}
 }
 

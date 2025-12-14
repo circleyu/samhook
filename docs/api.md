@@ -262,10 +262,10 @@ err := samhook.SendWithContext(ctx, webhookURL, msg)
 
 ### SendWithRetry
 
-Sends a message with retry mechanism.
+Sends a message with retry mechanism, supporting custom client configuration.
 
 ```go
-func SendWithRetry(url string, msg Message, opts RetryOptions) error
+func SendWithRetry(url string, msg Message, opts RetryOptions, clientOpts ...ClientOption) error
 ```
 
 #### Parameters
@@ -273,6 +273,7 @@ func SendWithRetry(url string, msg Message, opts RetryOptions) error
 - `url` - Webhook URL (string)
 - `msg` - Message structure to send
 - `opts` - Retry options
+- `clientOpts` - Optional client configuration options (variadic)
 
 #### Return Value
 
@@ -291,6 +292,9 @@ func SendWithRetry(url string, msg Message, opts RetryOptions) error
 opts := samhook.DefaultRetryOptions
 opts.MaxRetries = 5
 err := samhook.SendWithRetry(webhookURL, msg, opts)
+
+// With custom timeout
+err := samhook.SendWithRetry(webhookURL, msg, opts, samhook.WithTimeout(30*time.Second))
 ```
 
 ## Option Types
@@ -391,16 +395,21 @@ const (
 ```go
 const (
     ErrorCodeNetworkTimeout     = "NETWORK_TIMEOUT"
-    ErrorCodeNetworkConnection  = "NETWORK_CONNECTION"
+    ErrorCodeNetworkConnection = "NETWORK_CONNECTION"
     ErrorCodeNetworkDNS         = "NETWORK_DNS"
-    ErrorCodeSerializationJSON  = "SERIALIZATION_JSON"
-    ErrorCodeAPIUnauthorized    = "API_UNAUTHORIZED"
-    ErrorCodeAPIForbidden       = "API_FORBIDDEN"
-    ErrorCodeAPINotFound        = "API_NOT_FOUND"
-    ErrorCodeAPIRateLimit       = "API_RATE_LIMIT"
+    ErrorCodeSerializationJSON = "SERIALIZATION_JSON"
+    ErrorCodeAPIUnauthorized   = "API_UNAUTHORIZED"
+    ErrorCodeAPIForbidden      = "API_FORBIDDEN"
+    ErrorCodeAPINotFound       = "API_NOT_FOUND"
+    ErrorCodeAPIRateLimit      = "API_RATE_LIMIT"
     ErrorCodeAPIServerError    = "API_SERVER_ERROR"
 )
 ```
+
+**Note**: Network errors are now automatically classified into more specific types:
+- `NETWORK_TIMEOUT` - Request timeout
+- `NETWORK_DNS` - DNS resolution failure
+- `NETWORK_CONNECTION` - Connection failure
 
 #### Error Constructor Functions
 
@@ -435,3 +444,81 @@ if err != nil {
 ```
 
 It is recommended to handle these errors appropriately in production environments and implement corresponding retry or fallback strategies based on error types.
+
+## Utility Functions
+
+### ValidateWebhookURL
+
+Validates webhook URL format and protocol.
+
+```go
+func ValidateWebhookURL(webhookURL string) error
+```
+
+#### Parameters
+
+- `webhookURL` - Webhook URL to validate (string)
+
+#### Return Value
+
+- `error` - Returns an error if validation fails, otherwise returns nil
+
+#### Validation Rules
+
+- URL must not be empty
+- URL must be a valid URL format
+- URL scheme must be `http` or `https`
+- URL must have a host
+
+#### Example
+
+```go
+err := samhook.ValidateWebhookURL(webhookURL)
+if err != nil {
+    log.Fatalf("Invalid webhook URL: %v", err)
+}
+```
+
+## Logging
+
+### Logger Interface
+
+Optional logging interface for request tracking.
+
+```go
+type Logger interface {
+    LogRequest(url string, method string, duration time.Duration, err error)
+}
+```
+
+### SetLogger
+
+Sets a package-level logger for request logging.
+
+```go
+func SetLogger(logger Logger)
+```
+
+### SetLoggerWriter
+
+Sets a package-level logger using an `io.Writer`.
+
+```go
+func SetLoggerWriter(w io.Writer)
+```
+
+#### Example
+
+```go
+import (
+    "os"
+    "github.com/circleyu/samhook"
+)
+
+// Use standard output for logging
+samhook.SetLoggerWriter(os.Stdout)
+
+// Or use a custom logger
+customLogger := &MyLogger{}
+samhook.SetLogger(customLogger)
+```

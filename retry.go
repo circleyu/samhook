@@ -49,13 +49,13 @@ func (eb *ExponentialBackoff) NextInterval(attempt int) time.Duration {
 	return time.Duration(interval)
 }
 
-// SendWithRetry 帶重試的發送
-func SendWithRetry(url string, msg Message, opts RetryOptions) error {
+// SendWithRetry 帶重試的發送，支援自訂客戶端配置
+func SendWithRetry(url string, msg Message, opts RetryOptions, clientOpts ...ClientOption) error {
 	var lastErr error
 	interval := opts.Interval
 
 	for i := 0; i <= opts.MaxRetries; i++ {
-		err := Send(url, msg)
+		err := SendWithOptions(url, msg, clientOpts...)
 		if err == nil {
 			return nil
 		}
